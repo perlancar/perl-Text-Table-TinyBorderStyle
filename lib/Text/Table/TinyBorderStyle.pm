@@ -95,9 +95,9 @@ sub _get_row_format {
     my ($border_style_obj, $widths) = @_;
     join(
         "",
-        $border_style_obj->get_border_char(3, 0),
+        $border_style_obj->get_border_char(3, 0). " ",
         join(" ".$border_style_obj->get_border_char(3, 1)." ",  map { "%-${_}s" } @$widths),
-        $border_style_obj->get_border_char(3, 2),
+        " " . $border_style_obj->get_border_char(3, 2),
     );
 }
 
@@ -106,9 +106,9 @@ sub _get_header_row_format {
     my ($border_style_obj, $widths) = @_;
     join(
         "",
-        $border_style_obj->get_border_char(1, 0),
+        $border_style_obj->get_border_char(1, 0) . " ",
         join(" ".$border_style_obj->get_border_char(1, 1)." ",  map { "%-${_}s" } @$widths),
-        $border_style_obj->get_border_char(1, 2),
+        " " . $border_style_obj->get_border_char(1, 2),
     );
 }
 
@@ -116,9 +116,9 @@ sub _get_top_border {
     my ($border_style_obj, $widths) = @_;
     join(
         "",
-        $border_style_obj->get_border_char(0, 0),
+        $border_style_obj->get_border_char(0, 0) . $border_style_obj->get_border_char(0, 1),
         join($border_style_obj->get_border_char(0, 1) . $border_style_obj->get_border_char(0, 2) . $border_style_obj->get_border_char(0, 1),  map { $border_style_obj->get_border_char(0, 1, $_) } @$widths),
-        $border_style_obj->get_border_char(0, 3),
+        $border_style_obj->get_border_char(0, 1) . $border_style_obj->get_border_char(0, 3),
     );
 }
 
@@ -126,9 +126,9 @@ sub _get_header_row_separator {
     my ($border_style_obj, $widths) = @_;
     join(
         "",
-        $border_style_obj->get_border_char(2, 0),
+        $border_style_obj->get_border_char(2, 0) . $border_style_obj->get_border_char(2, 1),
         join($border_style_obj->get_border_char(2, 1) . $border_style_obj->get_border_char(2, 2) . $border_style_obj->get_border_char(2, 1),  map { $border_style_obj->get_border_char(2, 1, $_) } @$widths),
-        $border_style_obj->get_border_char(2, 3),
+        $border_style_obj->get_border_char(2, 1) . $border_style_obj->get_border_char(2, 3),
     );
 }
 
@@ -136,9 +136,9 @@ sub _get_row_separator {
     my ($border_style_obj, $widths) = @_;
     join(
         "",
-        $border_style_obj->get_border_char(4, 0),
+        $border_style_obj->get_border_char(4, 0) . $border_style_obj->get_border_char(4, 1),
         join($border_style_obj->get_border_char(4, 1) . $border_style_obj->get_border_char(4, 2) . $border_style_obj->get_border_char(4, 1),  map { $border_style_obj->get_border_char(4, 1, $_) } @$widths),
-        $border_style_obj->get_border_char(4, 3),
+        $border_style_obj->get_border_char(4, 1) . $border_style_obj->get_border_char(4, 3),
     );
 }
 
@@ -146,9 +146,9 @@ sub _get_bottom_border {
     my ($border_style_obj, $widths) = @_;
     join(
         "",
-        $border_style_obj->get_border_char(5, 0),
+        $border_style_obj->get_border_char(5, 0) . $border_style_obj->get_border_char(5, 1) ,
         join($border_style_obj->get_border_char(5, 1) . $border_style_obj->get_border_char(5, 2) . $border_style_obj->get_border_char(5, 1),  map { $border_style_obj->get_border_char(5, 1, $_) } @$widths),
-        $border_style_obj->get_border_char(5, 3),
+        $border_style_obj->get_border_char(5, 1) . $border_style_obj->get_border_char(5, 3),
     );
 }
 
