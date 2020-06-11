@@ -163,7 +163,7 @@ sub _get_bottom_border {
 }
 
 1;
-# ABSTRACT: Text::Table::Tiny + support for colored text
+# ABSTRACT: Text::Table::Tiny + support for border styles
 
 =for Pod::Coverage ^(.+)$
 
@@ -215,8 +215,8 @@ L<BorderStyle::ASCII::SingleLine> or L<BorderStyle::UTF8::DoubleLine>.
 
 L<Text::Table::Any>
 
-L<Text::ANSITable> which also supports border styles as well as color themes,
-aligning wide/colored text, and other features, but with larger footprint and
-slower rendering speed.
+L<Text::ANSITable> which also supports border styles as well as color themes
+(including coloring the borders), aligning wide/colored text, and other
+features, but with larger footprint and slower rendering speed.
 
 =cut
