@@ -19,7 +19,11 @@ sub generate_table {
     my %params = @_;
     my $rows = $params{rows} or die "Must provide rows!";
 
-    my $border_style_name = $params{border_style} || 'BorderStyle::ASCII::SingleLine';
+    my $border_style_name = $params{border_style} ||
+        $ENV{TEXT_TABLE_TINY_BORDER_STYLE} ||
+        $ENV{BORDER_STYLE} ||
+        'BorderStyle::ASCII::SingleLine';
+
     require Module::Load::Util;
     my $border_style_obj = Module::Load::Util::instantiate_class_with_optional_args($border_style_name);
 
@@ -186,6 +190,19 @@ specification. The styles are in C<BorderStyle::*> modules. Try installing and
 using the border style modules to see what they look like.
 
 Interface, options, and format variables are the same as in Text::Table::Tiny.
+
+
+=head1 ENVIRONMENT
+
+=head2 BORDER_STYLE
+
+Set default for C<border_style> argument. See also
+L</TEXT_TABLE_TINY_BORDER_STYLE>.
+
+=head2 BORDER_STYLE
+
+Set default for C<border_style> argument. Takes precedence over
+L</BORDER_STYLE>.
 
 
 =head1 SEE ALSO
