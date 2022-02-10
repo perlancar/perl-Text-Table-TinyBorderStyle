@@ -1,10 +1,5 @@
 package Text::Table::TinyBorderStyle;
 
-# AUTHORITY
-# DATE
-# DIST
-# VERSION
-
 use 5.006;
 use strict;
 use warnings;
@@ -12,6 +7,12 @@ use warnings;
 use List::Util ();
 
 use Exporter qw(import);
+
+# AUTHORITY
+# DATE
+# DIST
+# VERSION
+
 our @EXPORT_OK = qw/ generate_table /;
 
 sub generate_table {
@@ -25,19 +26,23 @@ sub generate_table {
         'BorderStyle::ASCII::SingleLine';
 
     require Module::Load::Util;
-    my $border_style_obj = Module::Load::Util::instantiate_class_with_optional_args($border_style_name);
+    my $border_style_obj = Module::Load::Util::instantiate_class_with_optional_args(
+        {ns_prefixes=>["BorderStyle", ""]}, $border_style_name);
 
     # foreach col, get the biggest width
     my $widths = _maxwidths($rows);
     my $max_index = _max_array_index($rows);
 
+    my $table_has_header_row = $params{header_row} && @$rows;
+    my $table_has_data_row   = @$rows >= ($params{header_row} ? 2:1);
+
     # use that to get the field format and separators
     my $row_format        = _get_row_format          ($border_style_obj, $widths);
     my $header_row_format = _get_header_row_format   ($border_style_obj, $widths);
-    my $top_border        = _get_top_border          ($border_style_obj, $widths);
+    my $top_border        = _get_top_border          ($border_style_obj, $widths, $table_has_header_row, $table_has_data_row);
     my $head_row_sep      = _get_header_row_separator($border_style_obj, $widths);
     my $row_sep           = _get_row_separator       ($border_style_obj, $widths);
-    my $bottom_border     = _get_bottom_border       ($border_style_obj, $widths);
+    my $bottom_border     = _get_bottom_border       ($border_style_obj, $widths, $table_has_header_row, $table_has_data_row);
 
     # here we go...
     my @table;
@@ -45,8 +50,10 @@ sub generate_table {
 
     # if the first row's a header:
     my $data_begins = 0;
-    if ( $params{header_row} ) {
+    {
+        last unless $params{header_row};
         my $header_row = $rows->[0];
+        last unless $header_row;
         $data_begins++;
         push @table, sprintf(
                          $header_row_format,
@@ -96,12 +103,12 @@ sub _max_array_index {
 
 # TODO: what if border character contains %
 sub _get_row_format {
-    my ($border_style_obj, $widths) = @_;
+    my ($border_style_obj, $widths, $table_has_header_row, $table_has_data_row) = @_;
     join(
         "",
-        $border_style_obj->get_border_char(3, 0). " ",
-        join(" ".$border_style_obj->get_border_char(3, 1)." ",  map { "%-${_}s" } @$widths),
-        " " . $border_style_obj->get_border_char(3, 2),
+        $border_style_obj->get_border_char(char=>'v', for_data_row=>1). " ",
+        join(" ".$border_style_obj->get_border_char(char=>'v', for_data_row=>1, for_inside_cell=>1)." ",  map { "%-${_}s" } @$widths),
+        " " . $border_style_obj->get_border_char(char=>'v', for_data_row=>1),
     );
 }
 
@@ -110,19 +117,25 @@ sub _get_header_row_format {
     my ($border_style_obj, $widths) = @_;
     join(
         "",
-        $border_style_obj->get_border_char(1, 0) . " ",
-        join(" ".$border_style_obj->get_border_char(1, 1)." ",  map { "%-${_}s" } @$widths),
-        " " . $border_style_obj->get_border_char(1, 2),
+        $border_style_obj->get_border_char(char=>'v', for_header_row=>1) . " ",
+        join(" ".$border_style_obj->get_border_char(char=>'v', for_header_row=>1, for_inside_cell=>1)." ",  map { "%-${_}s" } @$widths),
+        " " . $border_style_obj->get_border_char(char=>'v', for_header_row=>1),
     );
 }
 
 sub _get_top_border {
-    my ($border_style_obj, $widths) = @_;
+    my ($border_style_obj, $widths, $table_has_header_row, $table_has_data_row) = @_;
+    my %gbcargs;
+    if ($table_has_header_row) {
+        $gbcargs{for_header_row} = 1;
+    } else {
+        $gbcargs{for_data_row} = 1;
+    }
     join(
         "",
-        $border_style_obj->get_border_char(0, 0) . $border_style_obj->get_border_char(0, 1),
-        join($border_style_obj->get_border_char(0, 1) . $border_style_obj->get_border_char(0, 2) . $border_style_obj->get_border_char(0, 1),  map { $border_style_obj->get_border_char(0, 1, $_) } @$widths),
-        $border_style_obj->get_border_char(0, 1) . $border_style_obj->get_border_char(0, 3),
+        $border_style_obj->get_border_char(char=>'rd', %gbcargs) . $border_style_obj->get_border_char(char=>'h', %gbcargs),
+        join($border_style_obj->get_border_char(char=>'h', %gbcargs) . $border_style_obj->get_border_char(char=>'hd', %gbcargs) . $border_style_obj->get_border_char(char=>'h', %gbcargs),  map { $border_style_obj->get_border_char(char=>'h', repeat=>$_, %gbcargs) } @$widths),
+        $border_style_obj->get_border_char(char=>'h', %gbcargs) . $border_style_obj->get_border_char(char=>'ld', %gbcargs),
     );
 }
 
@@ -130,9 +143,9 @@ sub _get_header_row_separator {
     my ($border_style_obj, $widths) = @_;
     join(
         "",
-        $border_style_obj->get_border_char(2, 0) . $border_style_obj->get_border_char(2, 1),
-        join($border_style_obj->get_border_char(2, 1) . $border_style_obj->get_border_char(2, 2) . $border_style_obj->get_border_char(2, 1),  map { $border_style_obj->get_border_char(2, 1, $_) } @$widths),
-        $border_style_obj->get_border_char(2, 1) . $border_style_obj->get_border_char(2, 3),
+        $border_style_obj->get_border_char(char=>'rv', for_header_data_separator=>1) . $border_style_obj->get_border_char(char=>'h', for_header_data_separator=>1),
+        join($border_style_obj->get_border_char(char=>'h', for_header_data_separator=>1) . $border_style_obj->get_border_char(char=>'hv', for_header_data_separator=>1) . $border_style_obj->get_border_char(char=>'h', for_header_data_separator=>1),  map { $border_style_obj->get_border_char(char=>'h', repeat=>$_, for_header_data_separator=>1) } @$widths),
+        $border_style_obj->get_border_char(char=>'h', for_header_data_separator=>1) . $border_style_obj->get_border_char(char=>'lv', for_header_data_separator=>1),
     );
 }
 
@@ -140,19 +153,25 @@ sub _get_row_separator {
     my ($border_style_obj, $widths) = @_;
     join(
         "",
-        $border_style_obj->get_border_char(4, 0) . $border_style_obj->get_border_char(4, 1),
-        join($border_style_obj->get_border_char(4, 1) . $border_style_obj->get_border_char(4, 2) . $border_style_obj->get_border_char(4, 1),  map { $border_style_obj->get_border_char(4, 1, $_) } @$widths),
-        $border_style_obj->get_border_char(4, 1) . $border_style_obj->get_border_char(4, 3),
+        $border_style_obj->get_border_char(char=>'rv', for_data_row=>1) . $border_style_obj->get_border_char(char=>'h', for_data_row=>1),
+        join($border_style_obj->get_border_char(char=>'h', for_data_row=>1) . $border_style_obj->get_border_char(char=>'hv', for_data_row=>1) . $border_style_obj->get_border_char(char=>'h', for_data_row=>1),  map { $border_style_obj->get_border_char(char=>'h', repeat=>$_, for_data_row=>1) } @$widths),
+        $border_style_obj->get_border_char(char=>'h', for_data_row=>1) . $border_style_obj->get_border_char(char=>'lv', for_data_row=>1),
     );
 }
 
 sub _get_bottom_border {
-    my ($border_style_obj, $widths) = @_;
+    my ($border_style_obj, $widths, $table_has_header_row, $table_has_data_row) = @_;
+    my %gbcargs;
+    if (!$table_has_data_row) {
+        $gbcargs{for_header_row} = 1;
+    } else {
+        $gbcargs{for_data_row} = 1;
+    }
     join(
         "",
-        $border_style_obj->get_border_char(5, 0) . $border_style_obj->get_border_char(5, 1) ,
-        join($border_style_obj->get_border_char(5, 1) . $border_style_obj->get_border_char(5, 2) . $border_style_obj->get_border_char(5, 1),  map { $border_style_obj->get_border_char(5, 1, $_) } @$widths),
-        $border_style_obj->get_border_char(5, 1) . $border_style_obj->get_border_char(5, 3),
+        $border_style_obj->get_border_char(char=>'ru', %gbcargs) . $border_style_obj->get_border_char(char=>'h', %gbcargs),
+        join($border_style_obj->get_border_char(char=>'h', %gbcargs) . $border_style_obj->get_border_char(char=>'hu', %gbcargs) . $border_style_obj->get_border_char(char=>'h', %gbcargs),  map { $border_style_obj->get_border_char(char=>'h', repeat=>$_, %gbcargs) } @$widths),
+        $border_style_obj->get_border_char(char=>'h', %gbcargs) . $border_style_obj->get_border_char(char=>'lu', %gbcargs),
     );
 }
 
