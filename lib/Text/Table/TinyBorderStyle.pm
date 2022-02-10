@@ -199,7 +199,7 @@ Interface, options, and format variables are the same as in Text::Table::Tiny.
 Set default for C<border_style> argument. See also
 L</TEXT_TABLE_TINY_BORDER_STYLE>.
 
-=head2 BORDER_STYLE
+=head2 TEXT_TABLE_TINY_BORDER_STYLE
 
 Set default for C<border_style> argument. Takes precedence over
 L</BORDER_STYLE>.
